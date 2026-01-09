@@ -29,7 +29,7 @@ up:				## Build and start all services.
 build:			## Build all services.
 	@echo "Setting up buildx for multi-platform support..."
 	@docker buildx create --use --name reconpoint-builder 2>/dev/null || docker buildx use reconpoint-builder
-	${COMPOSE_PREFIX_CMD} ${DOCKER_COMPOSE} ${COMPOSE_ALL_FILES} build ${SERVICES}
+	${COMPOSE_PREFIX_CMD} ${DOCKER_COMPOSE} ${COMPOSE_ALL_FILES} build --parallel ${SERVICES}
 
 build-multiplatform:	## Build all services for multiple platforms (amd64, arm64) and push to registry.
 	@echo "Building multi-platform images..."

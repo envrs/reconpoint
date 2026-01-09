@@ -4694,3 +4694,12 @@ def llm_vulnerability_description(vulnerability_id):
 			vuln.save()
 
 	return response
+
+
+@app.task(name='handle_scan_completion', bind=False, queue='default')
+def handle_scan_completion(scan_history_id):
+    """Handle scan completion event - trigger downstream processing."""
+    logger.info(f"Handling scan completion for scan {scan_history_id}")
+    # Example: Trigger GPT analysis or notifications
+    # For now, just log
+    pass

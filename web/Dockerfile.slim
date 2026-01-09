@@ -1,0 +1,81 @@
+# syntax=docker/dockerfile:1
+
+# --- Base Stage ---
+FROM python:3.10-slim as base
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tini \
+    # required for psycopg2
+    libpq-dev \
+    # other dependencies
+    nmap \
+    # cleanup
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# --- Builder Stage ---
+FROM base as builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    git \
+    libpcap-dev \
+    # cleanup
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Go
+ARG GOVERSION=1.21.5
+RUN curl -s -L -o /tmp/go.tar.gz https://go.dev/dl/go${GOVERSION}.linux-amd64.tar.gz \
+    && tar -xzC /usr/local -f /tmp/go.tar.gz \
+    && rm /tmp/go.tar.gz
+ENV GOROOT="/usr/local/go"
+ENV GOPATH=$HOME/go
+ENV PATH="${PATH}:${GOROOT}/bin:${GOPATH}/bin"
+
+# Install Go packages
+WORKDIR /usr/src/app
+ENV GO111MODULE=on
+RUN go install github.com/jaeles-project/gospider@latest
+RUN go install github.com/tomnomnom/gf@latest
+RUN go install github.com/tomnomnom/unfurl@latest
+RUN go install github.com/tomnomnom/waybackurls@latest
+RUN go install github.com/projectdiscovery/httpx/cmd/httpx@latest
+RUN go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
+RUN go install github.com/projectdiscovery/chaos-client/cmd/chaos@latest
+RUN go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
+RUN go install github.com/projectdiscovery/naabu/v2/cmd/naabu@latest
+RUN go install github.com/hakluke/hakrawler@latest
+RUN go install github.com/lc/gau/v2/cmd/gau@latest
+RUN go install github.com/owasp-amass/amass/v3/...
+RUN go install github.com/ffuf/ffuf@latest
+RUN go install github.com/projectdiscovery/tlsx/cmd/tlsx@latest
+RUN go install github.com/hahwul/dalfox/v2@latest
+RUN go install github.com/projectdiscovery/katana/cmd/katana@latest
+RUN go install github.com/dwisiswant0/crlfuzz/cmd/crlfuzz@latest
+RUN go install github.com/sa7mon/s3scanner@latest
+
+# --- Final Stage ---
+FROM base as final
+
+LABEL \
+    name="reconPoint" \
+    author="KhulnaSoft Ltd <security@khulnasoft.com>" \
+    description="reconPoint is a automated pipeline of recon process, useful for information gathering during web application penetration testing."
+
+WORKDIR /usr/src/app
+
+# Copy Go binaries from builder
+COPY --from=builder /go/bin/* /usr/local/bin/
+
+# Copy requirements
+COPY ./requirements.txt /tmp/requirements.txt
+RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
+
+COPY . .
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
