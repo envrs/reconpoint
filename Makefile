@@ -23,6 +23,9 @@ certs:		    ## Generate certificates.
 setup:			## Generate certificates.
 	@make certs
 
+setup_devcontainer:		## Set up devcontainer environment.
+	@docker build -f .devcontainer/Dockerfile -t reconpoint-dev .
+
 up:				## Build and start all services.
 	${COMPOSE_PREFIX_CMD} ${DOCKER_COMPOSE} ${COMPOSE_ALL_FILES} up -d --build ${SERVICES}
 
@@ -68,6 +71,16 @@ rm:				## Remove all services containers.
 
 test:
 	${COMPOSE_PREFIX_CMD} ${DOCKER_COMPOSE} $(COMPOSE_ALL_FILES) exec celery python3 -m unittest tests/test_scan.py
+
+lint:			## Run linting checks (flake8).
+	${COMPOSE_PREFIX_CMD} ${DOCKER_COMPOSE} $(COMPOSE_ALL_FILES) exec web flake8 .
+
+format:			## Format code with black and isort.
+	${COMPOSE_PREFIX_CMD} ${DOCKER_COMPOSE} $(COMPOSE_ALL_FILES) exec web black .
+	${COMPOSE_PREFIX_CMD} ${DOCKER_COMPOSE} $(COMPOSE_ALL_FILES) exec web isort .
+
+type-check:		## Run mypy type checking.
+	${COMPOSE_PREFIX_CMD} ${DOCKER_COMPOSE} $(COMPOSE_ALL_FILES) exec web mypy .
 
 logs:			## Tail all logs with -n 1000.
 	${COMPOSE_PREFIX_CMD} ${DOCKER_COMPOSE} $(COMPOSE_ALL_FILES) logs --follow --tail=1000 ${SERVICES}

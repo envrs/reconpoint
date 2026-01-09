@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     'two_factor',
     'channels',
     'compliance.apps.ComplianceConfig',
+    'reconPoint.apps.ReconPointConfig',
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -390,6 +391,3 @@ CACHES = {
         }
     }
 }
-
-# Load signals
-import reconPoint.signals
