@@ -3,25 +3,35 @@
 FROM ubuntu:20.04
 
 # Install necessary packages
-RUN apt-get update && \
-    apt-get install -y \
+RUN apt-get update && apt-get install -y \
+    zsh \
+    curl \
     build-essential \
     python3 \
     python3-pip \
     git \
-    && rm -rf /var/lib/apt/lists/*
+    build-essential \
+    npm \
+    lsof \
+    procps \
+    vim \
+    less \
+    net-tools \
+    sudo \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
-WORKDIR /workspaces/reconpoint
+# Set up work directory
+WORKDIR /workspace
 
-# Copy requirements file
-COPY web/requirements.txt .
+# Create the vscode user and group with the expected UID and GID (1000)
+RUN groupadd -g 1000 reconpoint && \
+    useradd -m -u 1000 -g 1000 -s /bin/zsh reconpoint && \
+    echo "reconpoint ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# Install Python dependencies
-RUN pip3 install -r requirements.txt
+# Set default shell to Zsh
+SHELL ["/bin/zsh", "-c"]
 
-# Expose any ports if necessary
-# EXPOSE 8000
+RUN echo 'export PS1="%~ %# "' >> /home/reconpoint/.zshrc
 
-# Command to run the application
-CMD ["bash"]
+# Set the default user
+USER reconpoint
