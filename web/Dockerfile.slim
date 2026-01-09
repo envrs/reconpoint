@@ -11,6 +11,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tini \
     # required for psycopg2
     libpq-dev \
+    # WeasyPrint dependencies
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf-2.0-0 \
+    shared-mime-info \
+    libjpeg-dev \
+    zlib1g-dev \
+    libpng-dev \
+    libexif-dev \
+    libgobject-2.0-0 \
+    libffi-dev \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-tools \
+    gstreamer1.0-x \
     # other dependencies
     nmap \
     # cleanup
@@ -40,24 +55,26 @@ ENV PATH="${PATH}:${GOROOT}/bin:${GOPATH}/bin"
 # Install Go packages
 WORKDIR /usr/src/app
 ENV GO111MODULE=on
-RUN go install github.com/jaeles-project/gospider@latest
-RUN go install github.com/tomnomnom/gf@latest
-RUN go install github.com/tomnomnom/unfurl@latest
-RUN go install github.com/tomnomnom/waybackurls@latest
-RUN go install github.com/projectdiscovery/httpx/cmd/httpx@latest
-RUN go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
-RUN go install github.com/projectdiscovery/chaos-client/cmd/chaos@latest
-RUN go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
-RUN go install github.com/projectdiscovery/naabu/v2/cmd/naabu@latest
-RUN go install github.com/hakluke/hakrawler@latest
-RUN go install github.com/lc/gau/v2/cmd/gau@latest
-RUN go install github.com/owasp-amass/amass/v3/...
-RUN go install github.com/ffuf/ffuf@latest
-RUN go install github.com/projectdiscovery/tlsx/cmd/tlsx@latest
-RUN go install github.com/hahwul/dalfox/v2@latest
-RUN go install github.com/projectdiscovery/katana/cmd/katana@latest
-RUN go install github.com/dwisiswant0/crlfuzz/cmd/crlfuzz@latest
-RUN go install github.com/sa7mon/s3scanner@latest
+RUN set -eux; \
+    go install github.com/jaeles-project/gospider@latest; \
+    go install github.com/tomnomnom/gf@latest; \
+    go install github.com/tomnomnom/unfurl@latest; \
+    go install github.com/tomnomnom/waybackurls@latest; \
+    go install github.com/projectdiscovery/httpx/cmd/httpx@latest; \
+    go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest; \
+    go install github.com/projectdiscovery/chaos-client/cmd/chaos@latest; \
+    go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest; \
+    go install github.com/projectdiscovery/naabu/v2/cmd/naabu@latest; \
+    go install github.com/hakluke/hakrawler@latest; \
+    go install github.com/lc/gau/v2/cmd/gau@latest; \
+    go install github.com/owasp-amass/amass/v3/...; \
+    go install github.com/ffuf/ffuf@latest; \
+    go install github.com/projectdiscovery/tlsx/cmd/tlsx@latest; \
+    go install github.com/hahwul/dalfox/v2@latest; \
+    go install github.com/projectdiscovery/katana/cmd/katana@latest; \
+    go install github.com/dwisiswant0/crlfuzz/cmd/crlfuzz@latest; \
+    go install github.com/sa7mon/s3scanner@latest; \
+    rm -rf /go/pkg/* && rm -rf /root/.cache/go-build
 
 # --- Final Stage ---
 FROM base as final
