@@ -2,6 +2,9 @@
 
 FROM ubuntu:20.04
 
+# Set up work directory
+WORKDIR /workspace
+
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
     zsh \
@@ -19,9 +22,6 @@ RUN apt-get update && apt-get install -y \
     net-tools \
     sudo \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Set up work directory
-WORKDIR /workspace
 
 # Create the vscode user and group with the expected UID and GID (1000)
 RUN groupadd -g 1000 reconpoint && \
